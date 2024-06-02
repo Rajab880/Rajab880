@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحذير أمني</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: black;
+            color: #00ff00;
+            font-family: 'Courier New', Courier, monospace;
+            text-align: center;
+        }
+        .message {
+            border: 1px solid #00ff00;
+            background-color: black;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+        .hacker-symbol {
+            font-size: 48px;
+            color: #00ff00;
+            text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
+            animation: blink 1s infinite alternate;
+        }
+        .success-symbol {
+            font-size: 48px;
+            color: #0000ff;
+            text-shadow: 0 0 5px #0000ff, 0 0 10px #0000ff, 0 0 20px #0000ff, 0 0 30px #0000ff;
+        }
+        .button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #00ffff;
+            color: black;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: #00cccc;
+        }
+        .marquee {
+            width: 100%;
+            overflow: hidden;
+            position: absolute;
+            bottom: 0;
+            background-color: black;
+            color: #00ff00;
+        }
+        .marquee div {
+            display: inline-block;
+            padding: 10px;
+            white-space: nowrap;
+            animation: marquee 5s linear infinite;
+        }
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        @keyframes blink {
+            0% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+        .progress-container {
+            width: 100%;
+            background-color: #333;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        .progress-bar {
+            height: 30px;
+            background-color: #00ff00;
+            width: 0;
+            transition: width 0.5s;
+        }
+        .already-accessed {
+            font-size: 48px;
+            color: #00ff00;
+            text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
+            animation: blink 1s infinite alternate;
+        }
+    </style>
+</head>
+<body>
+    <div class="message" id="message">
+        <div class="hacker-symbol" id="symbol">[-!---</div>
+        <h1></h1>
+        <p></p>
+        <button class="button" id="startButton" onclick="startImport()"></button>
+        <div class="progress-container" id="progressContainer" style="display: none;">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+    </div>
+    <div class="marquee">
+        <div id="marqueeText"></div>
+    </div>
+    <script>
+        const alreadyAccessed = localStorage.getItem('alreadyAccessed');
+
+        function startImport() {
+            document.getElementById('startButton').style.display = 'none';
+            document.getElementById('progressContainer').style.display = 'block';
+
+            let progress = 0;
+            const progressBar = document.getElementById('progressBar');
+            const interval = setInterval(() => {
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    showSuccessMessage();
+                } else {
+                    progress += 10;
+                    progressBar.style.width = progress + '%';
+                }
+            }, 500);
+        }
+
+        function showSuccessMessage() {
+            const lang = navigator.language || navigator.userLanguage;
+            const successMessage = lang.startsWith('ar') ? 'لقد تم الدخول الى هاتفك وفك شيفرته بنجاح. سيتم نقل كل بياناتك والصور الحاليه والمستقبيله بشكل تلقائي بعد الان.' :
+                                  lang.startsWith('tr') ? 'Telefonunuza başarıyla giriş yapıldı ve şifresi çözüldü. Tüm verileriniz ve gelecekteki fotoğraflarınız artık otomatik olarak aktarılacaktır.' :
+                                  'Your phone has been successfully accessed and decrypted. All your data and future photos will be automatically transferred from now on.';
+
+            document.getElementById('symbol').textContent = '✔';
+            document.getElementById('symbol').classList.remove('hacker-symbol');
+            document.getElementById('symbol').classList.add('success-symbol');
+            document.querySelector('.message h1').textContent = '';
+            document.querySelector('.message p').textContent = successMessage;
+
+            localStorage.setItem('alreadyAccessed', 'true');
+            window.removeEventListener('beforeunload', preventExit);
+            window.removeEventListener('blur', bringBack);
+        }
+
+        function preventExit(event) {
+            event.preventDefault();
+            event.returnValue = '';
+        }
+
+        function bringBack() {
+            alert('Please return to the page to complete the process.');
+        }
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const lang = navigator.language || navigator.userLanguage;
+            if (alreadyAccessed) {
+                document.getElementById('symbol').textContent = '[-!---';
+                document.getElementById('symbol').classList.add('already-accessed');
+                document.querySelector('.message h1').textContent = '';
+                document.querySelector('.message p').textContent = lang.startsWith('ar') ? 'لقد تم الدخول الى هاتفك مسبقا.' :
+                                            lang.startsWith('tr') ? 'Telefonunuza daha önce giriş yapıldı.' :
+                                            'Your phone has already been accessed.';
+                document.querySelector('.button').style.display = 'none';
+                document.getElementById('marqueeText').style.display = 'none';
+            } else {
+                if (lang.startsWith('ar')) {
+                    document.querySelector('.message h1').textContent = 'تحذير أمني: بياناتك في خطر!';
+                    document.querySelector('.message p').textContent = 'جاري استيراد البيانات من هاتفك. الرجاء الانتظار...';
+                    document.querySelector('.button').textContent = 'إيقاف استيراد البيانات وحماية الهاتف';
+                    document.getElementById('marqueeText').textContent = 'جاري استيراد بياناتك... جاري استيراد بياناتك... جاري استيراد بياناتك...';
+                } else if (lang.startsWith('tr')) {
+                    document.querySelector('.message h1').textContent = 'Güvenlik Uyarısı: Verileriniz risk altında!';
+                    document.querySelector('.message p').textContent = 'Telefonunuzdan veri aktarılıyor. Lütfen bekleyin...';
+                    document.querySelector('.button').textContent = 'Veri ithalatını durdur ve telefonu koru';
+                    document.getElementById('marqueeText').textContent = 'Verileriniz içe aktarılıyor... Verileriniz içe aktarılıyor... Verileriniz içe aktarılıyor...';
+                } else {
+                    document.querySelector('.message h1').textContent = 'Security Warning: Your data is at risk!';
+                    document.querySelector('.message p').textContent = 'Data is being imported from your phone. Please wait...';
+                    document.querySelector('.button').textContent = 'Stop data import and protect phone';
+                    document.getElementById('marqueeText').textContent = 'Your data is being imported... Your data is being imported... Your data is being imported...';
+                }
+
+                window.addEventListener('beforeunload', preventExit);
+                window.addEventListener('blur', bringBack);
+            }
+        });
+    </script>
+</body>
+</html>
